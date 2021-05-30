@@ -88,54 +88,69 @@ More complex, selectable example below.
 - `keyExtractor` tells the list to use the `id`s for the react keys instead of the default `key` property.
 
 ```SnackPlayer name=flatlist-selectable
-import React, { useState } from "react";
-import { FlatList, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity } from "react-native";
+import React, {useCallback, useState, useRef} from 'react';
+import {
+  FlatList,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 
 const DATA = [
   {
-    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-    title: "First Item",
+    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
+    title: 'First Item',
   },
   {
-    id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-    title: "Second Item",
+    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
+    title: 'Second Item',
   },
   {
-    id: "58694a0f-3da1-471f-bd96-145571e29d72",
-    title: "Third Item",
+    id: '58694a0f-3da1-471f-bd96-145571e29d72',
+    title: 'Third Item',
   },
 ];
 
-const Item = ({ item, onPress, backgroundColor, textColor }) => (
+const Item = ({item, onPress, backgroundColor, textColor}) => (
   <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
     <Text style={[styles.title, textColor]}>{item.title}</Text>
   </TouchableOpacity>
 );
 
 const App = () => {
-  const [selectedId, setSelectedId] = useState(null);
+  const [extraData, setExtraData] = useState(null);
+  const selectIdRef = useRef();
 
-  const renderItem = ({ item }) => {
-    const backgroundColor = item.id === selectedId ? "#6e3b6e" : "#f9c2ff";
-    const color = item.id === selectedId ? 'white' : 'black';
+  const renderItem = useCallback(({item}) => {
+    const backgroundColor =
+      item.id === selectIdRef.current ? '#6e3b6e' : '#f9c2ff';
+    const color = item.id === selectIdRef.current ? 'white' : 'black';
+    const onPress = () => {
+      selectIdRef.current = item.id;
+      setExtraData(item.id);
+    };
 
     return (
       <Item
         item={item}
-        onPress={() => setSelectedId(item.id)}
-        backgroundColor={{ backgroundColor }}
-        textColor={{ color }}
+        onPress={onPress}
+        backgroundColor={{backgroundColor}}
+        textColor={{color}}
       />
     );
-  };
+  }, []);
+
+  const keyExtractor = useCallback(item => item.id, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
         data={DATA}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        extraData={selectedId}
+        keyExtractor={keyExtractor}
+        extraData={extraData}
       />
     </SafeAreaView>
   );
